@@ -1,0 +1,421 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>KDD-CUP-99 Task Description </title>
+</head>
+
+<body>
+
+<p>This document is adapted
+from the paper <i>Cost-based Modeling and Evaluation for Data Mining</i>
+<i>With Application to Fraud and Intrusion Detection: Results from the
+JAM Project</i> by Salvatore J. Stolfo, Wei Fan, Wenke Lee, Andreas Prodromidis,
+and Philip K. Chan.
+<br>&nbsp;
+<br>&nbsp;
+</p><h4>
+INTRUSION DETECTOR LEARNING</h4>
+Software to detect network intrusions protects a computer network from
+unauthorized users, including perhaps insiders.&nbsp; The intrusion detector
+learning task is to build a predictive model (i.e. a classifier) capable
+of distinguishing between ``bad'' connections, called intrusions or attacks,
+and ``good'' normal connections.
+
+<p>The 1998 DARPA Intrusion Detection Evaluation Program was prepared and
+managed by MIT Lincoln Labs. The objective was to survey and evaluate research
+in intrusion detection.&nbsp; A standard set of data to be audited, which
+includes a wide variety of intrusions simulated in a military network environment,
+was provided.&nbsp; The 1999 KDD intrusion detection contest uses a version
+of this dataset.
+
+</p><p>Lincoln Labs set up an environment to acquire nine weeks of raw TCP
+dump data for a local-area network (LAN) simulating a typical U.S. Air
+Force LAN.&nbsp; They operated the LAN as if it were a true Air Force environment,
+but peppered it with multiple attacks.
+
+</p><p>The raw training data was about four gigabytes of compressed binary
+TCP dump data from seven weeks of network traffic.&nbsp; This was processed
+into about five million connection records.&nbsp; Similarly, the two weeks
+of test data yielded around two million connection records.
+
+</p><p>A connection is a sequence of TCP packets starting and ending at some
+well defined times, between which data flows to and from a source IP address
+to a target IP address under some well defined protocol.&nbsp; Each connection
+is labeled as either normal, or as an attack, with exactly one specific
+attack type.&nbsp; Each connection record consists of about 100 bytes.
+
+</p><p>Attacks fall into four main categories:
+</p><ul>
+<li>
+DOS: denial-of-service, e.g. syn flood;</li>
+
+<li>
+R2L: unauthorized access from a remote machine, e.g. guessing password;</li>
+
+<li>
+U2R:&nbsp; unauthorized access to local superuser (root) privileges, e.g.,
+various ``buffer overflow'' attacks;</li>
+
+<li>
+probing: surveillance and other probing, e.g., port scanning.</li>
+</ul>
+It is important to note that the test data is not from the same probability
+distribution as the training data, and it includes specific attack types
+not in the training data.&nbsp; This makes the task more realistic.&nbsp;
+Some intrusion experts believe that most novel attacks are variants of
+known attacks and the "signature" of known attacks can be sufficient to
+catch novel variants.&nbsp; The datasets contain a total of 24 <a href="http://kdd.ics.uci.edu/databases/kddcup99/training_attack_types">training
+attack types</a>, with an additional 14 types in the test data only.
+<br>&nbsp;
+<br>&nbsp;
+<h4>
+DERIVED FEATURES</h4>
+Stolfo et al. defined higher-level features that help in distinguishing
+normal connections from attacks.&nbsp; There are several categories of
+derived features.
+
+<p>The ``same host'' features examine only the connections in the past
+two seconds that have the same destination host as the current connection,
+and calculate statistics related to protocol behavior, service, etc.
+
+</p><p>The similar ``same service'' features examine only the connections in
+the past two seconds that have the same service as the current connection.
+
+</p><p>"Same host" and "same service" features are together called&nbsp; time-based
+traffic features of the connection records.
+
+</p><p>Some probing attacks scan the hosts (or ports) using a much larger time
+interval than two seconds, for example once per minute.&nbsp; Therefore,
+connection records were also sorted by destination host, and features were
+constructed using a window of 100 connections to the same host instead
+of a time window.&nbsp; This yields a set of so-called host-based traffic
+features.
+
+</p><p>Unlike most of the DOS and probing attacks, there appear to be no sequential
+patterns that are frequent in records of R2L and U2R attacks. This is because
+the DOS and probing attacks involve many connections to some host(s) in
+a very short period of time, but the R2L and U2R attacks are embedded in
+the data portions
+<br>of packets, and normally involve only a single connection.
+
+</p><p>Useful algorithms for mining the unstructured data portions of packets
+automatically are an open research question.&nbsp; Stolfo et al. used domain
+knowledge to add features that look for suspicious behavior in the data
+portions, such as the number of failed login attempts.&nbsp; These features
+are called ``content'' features.
+
+</p><p>A complete listing of the set of features defined for the connection
+records is given in the three tables below.&nbsp; The data schema of the
+contest dataset is available in <a href="http://kdd.ics.uci.edu/databases/kddcup99/kddcup.names">machine-readable
+form</a> .
+<br>&nbsp;
+<br>&nbsp;
+</p><center><table nosave="" border="" width="80%">
+<tbody><tr nosave="">
+<td><i>feature name</i></td>
+
+<td nosave=""><i>description&nbsp;</i></td>
+
+<td><i>type</i></td>
+</tr>
+
+<tr>
+<td>duration&nbsp;</td>
+
+<td>length (number of seconds) of the connection&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>protocol_type&nbsp;</td>
+
+<td>type of the protocol, e.g. tcp, udp, etc.&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>service&nbsp;</td>
+
+<td>network service on the destination, e.g., http, telnet, etc.&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>src_bytes&nbsp;</td>
+
+<td>number of data bytes from source to destination&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>dst_bytes&nbsp;</td>
+
+<td>number of data bytes from destination to source&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>flag&nbsp;</td>
+
+<td>normal or error status of the connection&nbsp;</td>
+
+<td>discrete&nbsp;</td>
+</tr>
+
+<tr>
+<td>land&nbsp;</td>
+
+<td>1 if connection is from/to the same host/port; 0 otherwise&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>wrong_fragment&nbsp;</td>
+
+<td>number of ``wrong'' fragments&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>urgent&nbsp;</td>
+
+<td>number of urgent packets&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+</tbody><caption align="BOTTOM">&nbsp;
+<br>Table 1: Basic features of individual TCP connections.</caption>
+</table></center>
+&nbsp;
+<center><table nosave="" border="" width="80%">
+<tbody><tr>
+<td><i>feature name</i></td>
+
+<td><i>description&nbsp;</i></td>
+
+<td><i>type</i></td>
+</tr>
+
+<tr>
+<td>hot&nbsp;</td>
+
+<td>number of ``hot'' indicators</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>num_failed_logins&nbsp;</td>
+
+<td>number of failed login attempts&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>logged_in&nbsp;</td>
+
+<td>1 if successfully logged in; 0 otherwise&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>num_compromised&nbsp;</td>
+
+<td>number of ``compromised'' conditions&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>root_shell&nbsp;</td>
+
+<td>1 if root shell is obtained; 0 otherwise&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>su_attempted&nbsp;</td>
+
+<td>1 if ``su root'' command attempted; 0 otherwise&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>num_root&nbsp;</td>
+
+<td>number of ``root'' accesses&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>num_file_creations&nbsp;</td>
+
+<td>number of file creation operations&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>num_shells&nbsp;</td>
+
+<td>number of shell prompts&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>num_access_files&nbsp;</td>
+
+<td>number of operations on access control files&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr nosave="">
+<td>num_outbound_cmds</td>
+
+<td nosave="">number of outbound commands in an ftp session&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>is_hot_login&nbsp;</td>
+
+<td>1 if the login belongs to the ``hot'' list; 0 otherwise&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+<tr>
+<td>is_guest_login&nbsp;</td>
+
+<td>1 if the login is a ``guest''login; 0 otherwise&nbsp;</td>
+
+<td>discrete</td>
+</tr>
+
+</tbody><caption align="BOTTOM">&nbsp;
+<br>Table 2: Content features within a connection suggested by domain knowledge.</caption>
+</table></center>
+&nbsp;
+<center><table nosave="" border="" width="80%">
+<tbody><tr>
+<td><i>feature name</i></td>
+
+<td><i>description&nbsp;</i></td>
+
+<td><i>type</i></td>
+</tr>
+
+<tr>
+<td>count&nbsp;</td>
+
+<td>number of connections to the same host as the current connection in
+the past two seconds&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td><i>Note: The following&nbsp; features refer to these same-host connections.</i></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>serror_rate&nbsp;</td>
+
+<td>% of connections that have ``SYN'' errors&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>rerror_rate&nbsp;</td>
+
+<td>% of connections that have ``REJ'' errors&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>same_srv_rate&nbsp;</td>
+
+<td>% of connections to the same service&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>diff_srv_rate&nbsp;</td>
+
+<td>% of connections to different services&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>srv_count&nbsp;</td>
+
+<td>number of connections to the same service as the current connection
+in the past two seconds&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td><i>Note: The following features refer to these same-service connections.</i></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>srv_serror_rate&nbsp;</td>
+
+<td>% of connections that have ``SYN'' errors&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>srv_rerror_rate&nbsp;</td>
+
+<td>% of connections that have ``REJ'' errors&nbsp;</td>
+
+<td>continuous</td>
+</tr>
+
+<tr>
+<td>srv_diff_host_rate&nbsp;</td>
+
+<td>% of connections to different hosts&nbsp;</td>
+
+<td>continuous&nbsp;</td>
+</tr>
+
+</tbody><caption align="BOTTOM">&nbsp;
+<br>Table 3: Traffic features computed using a two-second time window.</caption>
+</table></center>
+&nbsp;
+
+
+
+
+</body></html>
