@@ -18,7 +18,7 @@ meta_file = "../data/meta.json"
 readme_file = "../data/KDD-CUP-99 Task Description.htm"
 
 # TODO read in the names data from disk and parse/convert to a clean list
-names = [
+csv_column_names = [
     "duration",
     "protocol_type",
     "service",
@@ -63,14 +63,21 @@ names = [
     "category"
 ]
 
+target_name = "category"
+
 # analyse csv & create json metadata file
 def analyse(data_file):
-    csv = pd.read_csv(data_file, names=names)
+    csv = pd.read_csv(data_file, names=csv_column_names)
+
+    xnames = list(csv.columns)
+    feature_names = list(csv.columns)
+    feature_names.remove(target_name)
 
     meta = {
         'target_names': list(csv.category.unique()),
-        'feature_names': list(csv.columns),
-        'categorical_features': {
+        'names': xnames,
+        'feature_names': feature_names,
+        'categorical_data': {
             column: list(csv[column].unique())
             for column in csv.columns
             if csv[column].dtype == 'object'
@@ -83,19 +90,28 @@ def analyse(data_file):
 def encode_dataset(dataset):
 
     encoders = dict()
-    unencoded_data = dict()
+    raw_data = dict()
 
-    for x in dataset.categorical_features:
+    for x in dataset.categorical_data:
         #print "encoding column: %s" % x
-        encoder = LabelEncoder()
-        encoder.fit(dataset.data[x])
-        encoders[x] = encoder
-        transformed_data = encoder.transform(dataset.data[x])
-        unencoded_data[x] = dataset.data[x]
-        dataset.data[x] = transformed_data
+        if x == target_name:
+            encoder = LabelEncoder()
+            encoder.fit(dataset.target)
+            encoders[x] = encoder
+            transformed_data = encoder.transform(dataset.target)
+            raw_data[x] = dataset.target
+            dataset.target = transformed_data
+        else:
+            encoder = LabelEncoder()
+            encoder.fit(dataset.data[x])
+            encoders[x] = encoder
+            transformed_data = encoder.transform(dataset.data[x])
+            raw_data[x] = dataset.data[x]
+            dataset.data = dataset.data.drop(x, 1)
+            dataset.data[x] = transformed_data
 
     dataset['encoders'] = encoders
-    dataset['unencoded_data'] = unencoded_data
+    dataset['raw_data'] = raw_data
 
 def load_data_10_percent():
     return load_data("../data/kddcup.data_10_percent_corrected")
@@ -111,25 +127,21 @@ def load_data(data_file):
     with open(meta_file, 'r') as f:
         meta = json.load(f)
 
-    names = meta['feature_names']
-
     # Load the readme information
     with open(readme_file, 'r') as f:
         readme = f.read()
 
     # Load the data
-    csv = pd.read_csv(data_file, names=names)
-
-    # Remove the target from the categorical features
-    meta['categorical_features'].pop('category')
+    csv = pd.read_csv(data_file, names=csv_column_names)
 
     # Return the bunch with the appropriate data chunked apart
     dataset = Bunch(
-        data = csv[names[:-1]],
-        target = csv[names[-1]],
+        data = csv[csv_column_names[:-1]],
+        target = csv[csv_column_names[-1]],
         target_names = meta['target_names'],
         feature_names = meta['feature_names'],
-        categorical_features = meta['categorical_features'],
+        categorical_data = meta['categorical_data'],
+        target_name = target_name,
         DESCR = readme)
 
     encode_dataset(dataset)
@@ -137,4 +149,4 @@ def load_data(data_file):
     return dataset
 
 if __name__ == "__main__":
-    dataset = load_data()
+    dataset = load_data_10_percent()
