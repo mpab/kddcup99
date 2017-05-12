@@ -23,7 +23,7 @@ import pandas as pd
 import kddcup
 
 # local utilities
-import nltk_cm
+import stats
 import graphs
 
 #-----------------------------------------------------------
@@ -99,7 +99,7 @@ class Analyser(object):
         test = list(self.dataset.encoders[self.dataset.target_name].inverse_transform(self.y_test))
         predict = list(self.dataset.encoders[self.dataset.target_name].inverse_transform(self.y_predict))
 
-        nltk_cm.report(test, predict, self.dataset.target_names, self.log)
+        stats.report(test, predict, self.dataset.target_names, self.log)
 
         self.log.info("-------------------------- END REPORT -----------------------------------")
 

@@ -15,10 +15,11 @@ def report(expected, predicted, labels, log):
     false_positives = Counter()
     missing_labels = Counter()
 
-    return
+    #merge expected & predicted, & get unique values
+    tested_labels = set(expected + predicted)
 
-    for i in labels:
-        for j in labels:
+    for i in tested_labels:
+        for j in tested_labels:
             if i == j:
                 true_positives[i] += cm[i,j]
             else:
@@ -27,31 +28,43 @@ def report(expected, predicted, labels, log):
 
     sb = ''
     for value, count in true_positives.most_common():
-        s = '{0}: {1}, '.format(value, count)
+        s = '{0}={1}, '.format(value, count)
         sb += s
-    log.info("True Positives: %d (%s)", sum(true_positives.values()), sb)
+    log.info("True Positives (%d): %s\n", sum(true_positives.values()), sb)
     
+    sb = ''
     for value, count in false_negatives.most_common():
-        s = '{0}: {1}, '.format(value, count)
+        s = '{0}={1}, '.format(value, count)
         sb += s
-    log.info("False Negatives: %d (%s)", sum(false_negatives.values()), sb)
+    log.info("False Negatives (%d): %s\n", sum(false_negatives.values()), sb)
 
+    sb = ''
     for value, count in false_positives.most_common():
-        s = '{0}: {1}, '.format(value, count)
+        s = '{0}={1}, '.format(value, count)
         sb += s
-    log.info("False Positives: %d (%s)", sum(false_positives.values()), sb)
+    log.info("False Positives (%d): %s\n", sum(false_positives.values()), sb)
 
-
-    log.info("F Scores:")
-    for i in sorted(labels):
-        if true_positives[i] == 0:
+    sb = ''
+    last = len(tested_labels) - 1
+    for i, x in enumerate(sorted(tested_labels)):
+        if true_positives[x] == 0:
             fscore = 0
         else:
-            precision = true_positives[i] / float(true_positives[i]+false_positives[i])
-            recall = true_positives[i] / float(true_positives[i]+false_negatives[i])
+            precision = true_positives[x] / float(true_positives[x]+false_positives[x])
+            recall = true_positives[x] / float(true_positives[x]+false_negatives[x])
             fscore = 2 * (precision * recall) / float(precision + recall)
 
-        log.info("%s %f", i, fscore)
+        if i != last:
+            sb += '{0}={1}, '.format(x, fscore)
+        else:
+            sb += '{0}={1}'.format(x, fscore)
+
+    log.info('F Scores: {0}\n'.format(sb))
+
+    untested_labels = set(labels) - tested_labels
+
+    if (len(untested_labels)):
+        log.info('No F Scores for untested categories: {0}\n'.format(list(untested_labels)))
 
 if __name__ == "__main__":
     expected = 'DET NN VB DET JJ NN NN IN DET NN DET NN VB DET JJ NN NN IN DET NN'.split()
