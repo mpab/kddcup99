@@ -7,14 +7,14 @@ root
    |-P15240916-IMAT5235-ANN-Assignment-2.docx
    |-data.xlsx
 |-python
-   |-classifier.py
+   |-MLP_*.py (classifier versions)
    |-kddcup.py
-   |-kddcup_CART.py
-   |-kddcup_KNN.py
-   |-kddcup_LOGRES.py
-   |-kddcup_MLP.py
-   |-kddcup_NBAYES.py
-   |-kddcup_SVM.py
+   |-CART.py
+   |-KNN.py
+   |-LOGRES.py
+   |-MLP.py
+   |-NBAYES.py
+   |-SVM.py
 |-data
    |-kddcup.data_10_percent_corrected
 |-analysis
@@ -68,10 +68,6 @@ setuptools (27.2.0)
 six (1.10.0)
 wheel (0.29.0)
 
-EXECUTING THE CLASSIFIERS
-Windows:
-There is a batch file – classifier.bat – in the root folder. Once the environment is correctly prepared, run the batch file to generate the analysis data for the selected classifiers.
-
-OS X and Linux
-Use the shell script classifier -  sh ./classifier or chmod +x classifier, then ./classifier if you want make the script executable.
+EXECUTING THE CLASSIFIERS 
+python MLP*.py
 
